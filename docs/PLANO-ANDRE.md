@@ -223,20 +223,101 @@ quadro durante os bónus.
 
 ---
 
-## 7. Frontend e som
+## 7. Frontend, apresentação e som
 
-- Passar a demo de HTML/CSS para **PixiJS**, por causa das animações por peças e
-  dos efeitos (vapor, faíscas, flash do choque). Confirmar primeiro na documentação
-  do Stake Engine o que o SDK de frontend usa, caso venha a ser submetido.
+### Apresentação profissional
+
+O jogo tem de parecer uma slot de estúdio. Regras:
+
+- **Nenhum texto explicativo no ecrã de jogo.** Nada de "Carrega em GIRAR", "a
+  grelha deixa de encolher", secções "Como funciona" por baixo dos rolos, nem frases
+  a explicar o que acabou de acontecer. A demo do Candy Riot tem tudo isto e não
+  passa para o novo jogo.
+- O ecrã mostra só: o logótipo, os rolos, o Andre, o multiplicador, o saldo, a
+  aposta, o ganho e os botões.
+- As regras e a tabela de pagamentos ficam num menu ⓘ, num painel próprio com o
+  estilo do jogo, como nas slots reais.
+- Os bónus anunciam-se só com o título ("VAI TOMAR BANHO!") e o número de rodadas,
+  com o grito em áudio. Não há legendas a explicar.
+- Os números sobem a rolar (contadores animados), nunca aparecem de repente.
+- Os botões são desenhados para o jogo (spin, turbo, autoplay, aposta, compra de
+  bónus, som, ⓘ), com estados de carregado e desativado.
+- As frases das cartas ("A dá pena") são parte da animação de ganho: uma etiqueta
+  pintada que salta do símbolo e desaparece. Não são balões de texto.
+
+### Animações
+
+Tudo com zoom, tremor e partículas. Por ordem de intensidade:
+
+| Momento | Animação |
+|---|---|
+| Rolos a girar | Desfoque de movimento, paragem com ressalto, pequeno pó/faísca no impacto |
+| Ganho normal | Símbolos vencedores fazem zoom-in, brilho e linha de ligação entre eles; depois **explodem** em estilhaços com a cor do símbolo |
+| Cascata | Os novos símbolos caem com peso; o rolo que cresce estica-se com um "estalo" e um flash |
+| Frase da carta | Etiqueta pintada entra com zoom e rotação ("A dá pena") e sai a desfazer-se |
+| Wild do cão | O cão salta para o rolo, a câmara faz zoom ao rolo, o multiplicador carimba-se em cima com tremor |
+| Antecipação | Com 2 scatters na grelha, os restantes rolos abrandam, a câmara aproxima-se, o fundo escurece e há batimento cardíaco |
+| Disparo do bónus | Scatters pulsam e explodem em luz, zoom total à grelha, corte para o grito, transição de ecrã |
+| Banho (chuveiro cai) | Zoom ao chuveiro, a cena do Andre no banho ocupa o ecrã por ~1,5 s com vapor e espuma, o multiplicador sobe com salpicos |
+| Choque (quadro cai) | Flash branco, ecrã treme, raio-X com o esqueleto, faíscas por cima dos rolos, multiplicador sobe com descarga elétrica |
+| Ganhos grandes | Escalões com animações cada vez maiores (ver abaixo) |
+| Ganho máximo | Ecrã próprio, fogo de artifício, o cão a ladrar, o Andre a partir o teclado |
+
+**Escalões de ganho** (texto só com o nome do escalão e o valor):
+
+| Escalão | A partir de | Efeito |
+|---|---|---|
+| BIG WIN | 15x | Zoom, moedas, contador a rolar |
+| MEGA WIN | 50x | + explosões, tremor de ecrã, o Andre levanta-se |
+| EPIC WIN | 200x | + câmara lenta, raios, o cão salta |
+| ANDRE WIN | 1000x | + ecrã a "rachar", fogo de artifício, música própria |
+
+Um toque no ecrã salta a animação para o valor final (exigido em qualquer slot séria).
+
+Respeitar a opção de movimento reduzido do sistema: menos tremor e flashes, mas
+continua a mostrar tudo.
+
+### Tecnologia
+
+- Passar a demo de HTML/CSS para **PixiJS**: as animações por peças, partículas,
+  câmara (zoom e tremor) e flashes precisam disso. Confirmar primeiro na
+  documentação do Stake Engine o que o SDK de frontend usa, caso venha a ser
+  submetido.
 - Disposição:
   - computador: Andre ao PC à esquerda, rolos ao centro, multiplicador e rodadas à direita;
   - telemóvel: Andre por cima, rolos, comandos em baixo.
-- Balões com as frases das cartas ("A dá pena") a saltar do símbolo vencedor.
 - Ecrãs de entrada e de fim para cada bónus.
-- Som: música lo-fi no jogo base; água e o Andre a cantarolar no banho; zumbido
-  elétrico e "ZZZT" no choque; ladrar no wild.
-- A voz que grita "VAI TOMAR BANHO!" e "VAI TRABALHAR!" pode ser gravada por alguém
-  da família. Fica mais engraçado do que uma voz gerada.
+- O Codex tem de gerar também as texturas para as partículas: estilhaços, moedas,
+  faíscas, gotas, espuma, fumo.
+
+### Som
+
+Os sons vão para `audio/` no repositório. Formato preferido: `.ogg` ou `.mp3`,
+44,1 kHz; os efeitos curtos (até 2 s) cortados sem silêncio no início.
+
+| Ficheiro | Uso |
+|---|---|
+| `musica_base` | Música do jogo base, em loop |
+| `musica_banho` | Música do Vai Tomar Banho, em loop |
+| `musica_trabalho` | Música do Vai Trabalhar, em loop |
+| `musica_bigwin` | Por baixo dos escalões de ganho |
+| `grito_banho` | "VAI TOMAR BANHO!" |
+| `grito_trabalho` | "VAI TRABALHAR!" |
+| `spin`, `paragem_rolo` | Girar e cada rolo a parar |
+| `ganho_pequeno`, `explosao` | Ganho e símbolos a rebentar |
+| `cascata` | Símbolos a cair |
+| `ladrar` | Wild do cão |
+| `scatter_chuveiro`, `scatter_quadro` | Scatter a cair (um som por rolo, a subir de tom) |
+| `antecipacao` | Batimento/tensão com 2 scatters |
+| `banho` | Água, e o Andre a cantarolar |
+| `choque` | Zumbido e "ZZZT" |
+| `multi_sobe` | Multiplicador a subir |
+| `contador` | Números a rolar |
+| `frase_a`, `frase_k`, ... | Voz das frases das cartas (opcional) |
+| `clique` | Botões |
+
+Se faltarem sons, o jogo usa os que existirem e fica calado nos outros. Os que não
+houver podem ser gerados ou tirados de bibliotecas livres (com licença que o permita).
 
 ---
 
@@ -321,9 +402,9 @@ Exemplos:
 | 0 | Responder às perguntas da secção 9 e pôr as fotos em `art/referencias/` | tu e o teu irmão |
 | 1 | Folhas de personagem do Andre e do cão; aprovação | Codex, depois vocês aprovam |
 | 2 | Símbolos, fundos e logótipo | Codex |
-| 3 | Peças animáveis (PC, banho, trabalho) | Codex |
+| 3 | Peças animáveis (PC, banho, trabalho) e texturas de partículas | Codex |
 | 4 | Matemática nova, simulação, RTP 96% | Claude |
-| 5 | Frontend PixiJS: rolos, Andre animado, bónus, frases, som | Claude |
+| 5 | Frontend PixiJS: rolos, Andre animado, bónus, escalões de ganho, efeitos, som | Claude |
 | 6 | Testes no telemóvel e no computador, afinações | todos |
 | 7 | (Opcional) Adaptar ao SDK do Stake Engine | Claude |
 
