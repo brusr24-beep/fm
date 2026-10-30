@@ -1,0 +1,401 @@
+<meta charset="utf-8">
+<title>Candy Riot</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik:wght@400;500;700&display=swap">
+<style>
+  /* Layout: one column machine — marquee, board, control deck — then the rules sheet below.
+     Single committed look: a candy factory at night, neon on soot. */
+  :root {
+    color-scheme: dark;
+    --soot: #160d1c;
+    --soot-2: #22142b;
+    --soot-3: #2f1c3a;
+    --sugar: #fff3f8;
+    --dim: #b9a3c4;
+    --pink: #ff4fa3;
+    --mint: #4dffb0;
+    --lemon: #ffd84d;
+    --grape: #9b5cff;
+    --danger: #ff6b5b;
+    --display: "Bungee", "Impact", "Arial Black", sans-serif;
+    --body: "Rubik", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --cell-base: min(8.2vw, 44px);
+    --t: 1;
+  }
+  html, body { background: var(--soot); color: var(--sugar); }
+  body {
+    font-family: var(--body);
+    font-size: 15px;
+    line-height: 1.5;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 20px 48px;
+    background:
+      radial-gradient(60rem 30rem at 50% -10rem, color-mix(in srgb, var(--pink) 22%, transparent), transparent 70%),
+      var(--soot);
+  }
+  body.free { background:
+      radial-gradient(60rem 30rem at 50% -10rem, color-mix(in srgb, var(--mint) 22%, transparent), transparent 70%),
+      var(--soot); }
+  .wrap { max-width: 600px; margin: 0 auto; display: grid; gap: 16px; }
+
+  header { text-align: center; display: grid; gap: 4px; }
+  h1 {
+    font-family: var(--display); font-weight: 400; margin: 0;
+    font-size: clamp(34px, 9vw, 54px); line-height: 1; letter-spacing: .02em;
+    color: var(--pink);
+    text-shadow: 0 0 18px color-mix(in srgb, var(--pink) 60%, transparent), 3px 3px 0 var(--grape);
+  }
+  .tagline { color: var(--dim); font-size: 13px; letter-spacing: .08em; text-transform: uppercase; }
+
+  .marquee {
+    display: flex; justify-content: space-between; align-items: center; gap: 12px;
+    font-family: var(--display); font-size: 14px; letter-spacing: .04em;
+  }
+  .ways b { color: var(--lemon); font-weight: 400; font-variant-numeric: tabular-nums; }
+  .status { color: var(--mint); min-height: 1.4em; text-align: right; }
+
+  .machine { position: relative; }
+  .board {
+    display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px;
+    aspect-ratio: 6 / 5.4; max-width: 100%;
+    padding: 8px; border-radius: 14px;
+    background: var(--soot-2);
+    border: 2px solid var(--soot-3);
+    box-shadow: 0 0 0 4px var(--soot), 0 0 40px color-mix(in srgb, var(--grape) 35%, transparent);
+  }
+  body.free .board { border-color: color-mix(in srgb, var(--mint) 55%, var(--soot-3)); }
+  .reel { display: flex; flex-direction: column; gap: 4px; min-height: 0; overflow: hidden; border-radius: 8px; }
+  .cell {
+    flex: 1 1 0; min-height: 0;
+    display: grid; place-items: center;
+    border-radius: 8px;
+    font-size: calc(var(--cell-base) * 4 / (var(--rows) + 1));
+    background: var(--soot-3);
+    transition: transform calc(200ms * var(--t)), opacity calc(200ms * var(--t)), filter calc(200ms * var(--t));
+  }
+  .cell.high { background: linear-gradient(160deg, color-mix(in srgb, var(--grape) 45%, var(--soot-3)), var(--soot-3)); }
+  .cell.ticket { background: linear-gradient(160deg, color-mix(in srgb, var(--lemon) 55%, var(--soot-3)), var(--soot-3)); }
+  .cell.drop { animation: drop calc(320ms * var(--t)) cubic-bezier(.3, 1.4, .5, 1) both; }
+  .cell.hit { transform: scale(1.06); filter: brightness(1.4); box-shadow: inset 0 0 0 2px var(--lemon), 0 0 16px var(--lemon); }
+  .cell.pop { transform: scale(.2) rotate(25deg); opacity: 0; }
+  @keyframes drop { from { transform: translateY(-120%); opacity: 0; } to { transform: none; opacity: 1; } }
+
+  .wildblock {
+    flex: 1; display: grid; place-items: center; align-content: center; gap: 6px;
+    border-radius: 8px;
+    background: repeating-linear-gradient(-45deg, var(--pink) 0 10px, color-mix(in srgb, var(--pink) 70%, var(--grape)) 10px 20px);
+    font-family: var(--display); text-align: center;
+  }
+  .wildblock.fresh { animation: shove calc(420ms * var(--t)) cubic-bezier(.2, 1.6, .4, 1) both; }
+  .wildblock .w { writing-mode: vertical-rl; font-size: clamp(14px, 4.4vw, 24px); letter-spacing: .1em; color: var(--sugar); text-shadow: 2px 2px 0 var(--grape); }
+  .wildblock .m { font-size: clamp(16px, 5vw, 28px); color: var(--lemon); text-shadow: 2px 2px 0 var(--soot); }
+  .wildblock.hit { filter: brightness(1.3); box-shadow: 0 0 20px var(--lemon); }
+  .wildblock.pop { transform: scale(.2); opacity: 0; transition: all calc(250ms * var(--t)); }
+  @keyframes shove { from { transform: scaleY(.15); } to { transform: none; } }
+
+  .overlay {
+    position: absolute; inset: 0; display: grid; place-items: center; text-align: center;
+    background: color-mix(in srgb, var(--soot) 78%, transparent);
+    border-radius: 14px; padding: 16px;
+  }
+  .overlay .big { font-family: var(--display); font-size: clamp(30px, 9vw, 52px); line-height: 1.05; color: var(--lemon); text-shadow: 3px 3px 0 var(--pink); }
+  .overlay .small { color: var(--sugar); margin-top: 6px; }
+
+  .winline { min-height: 1.5em; text-align: center; color: var(--dim); font-size: 13px; font-variant-numeric: tabular-nums; }
+
+  .deck {
+    display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px;
+    padding: 12px; border-radius: 14px; background: var(--soot-2); border: 1px solid var(--soot-3);
+  }
+  .meter { display: grid; gap: 2px; min-width: 0; }
+  .meter.right { text-align: right; }
+  .label { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--dim); }
+  .value { font-family: var(--display); font-size: clamp(16px, 4.6vw, 22px); font-variant-numeric: tabular-nums; }
+  .value.win { color: var(--mint); }
+
+  button { font: inherit; color: inherit; cursor: pointer; }
+  button:focus-visible { outline: 3px solid var(--lemon); outline-offset: 2px; }
+  button:disabled { cursor: not-allowed; opacity: .45; }
+  .spin {
+    width: 84px; height: 84px; border-radius: 50%;
+    border: 4px solid var(--sugar);
+    background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--pink) 70%, var(--sugar)), var(--pink) 60%, color-mix(in srgb, var(--pink) 60%, var(--grape)));
+    font-family: var(--display); font-size: 17px; color: var(--sugar);
+    box-shadow: 0 6px 0 var(--grape), 0 0 28px color-mix(in srgb, var(--pink) 60%, transparent);
+    transition: transform 120ms;
+  }
+  .spin:active:not(:disabled) { transform: translateY(4px); box-shadow: 0 2px 0 var(--grape); }
+
+  .row { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; align-items: center; }
+  .chip {
+    padding: 8px 14px; border-radius: 999px; border: 1px solid var(--soot-3);
+    background: var(--soot-2); font-size: 14px; font-weight: 500;
+  }
+  .chip[aria-pressed="true"] { border-color: var(--mint); color: var(--mint); }
+  .chip.buy { border-color: var(--lemon); color: var(--lemon); font-family: var(--display); font-weight: 400; letter-spacing: .03em; }
+  .bet { display: flex; align-items: center; gap: 6px; }
+  .bet .chip { width: 38px; padding: 8px 0; }
+  .bet output { min-width: 64px; text-align: center; font-family: var(--display); font-variant-numeric: tabular-nums; }
+
+  .sheet { display: grid; gap: 14px; margin-top: 12px; }
+  h2 { font-family: var(--display); font-weight: 400; font-size: 20px; margin: 0; color: var(--lemon); letter-spacing: .03em; }
+  .rules { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+  .rule { padding: 12px 14px; border-radius: 12px; background: var(--soot-2); min-width: 0; }
+  .rule h3 { margin: 0 0 4px; font-size: 14px; letter-spacing: .06em; text-transform: uppercase; color: var(--pink); }
+  .rule p { margin: 0; color: var(--dim); font-size: 14px; }
+  .paytable-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; font-size: 14px; }
+  th, td { padding: 6px 8px; text-align: right; border-bottom: 1px solid var(--soot-3); }
+  th:first-child, td:first-child { text-align: left; }
+  th { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--dim); font-weight: 500; }
+  td .sym { font-size: 20px; margin-right: 8px; vertical-align: middle; }
+  .fine { color: var(--dim); font-size: 12px; text-align: center; }
+
+  @media (max-width: 420px) {
+    .deck { grid-template-columns: 1fr 1fr; }
+    .deck .spin { grid-column: 1 / -1; grid-row: 1; justify-self: center; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .cell.drop, .wildblock { animation: none; }
+    .cell { transition: none; }
+  }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Candy Riot</h1>
+    <div class="tagline">6 rolos · até 117&nbsp;649 vias · ganho máximo 10&nbsp;000x</div>
+  </header>
+
+  <div class="marquee">
+    <div class="ways"><b id="ways">729</b> vias</div>
+    <div class="status" id="status" aria-live="polite"></div>
+  </div>
+
+  <div class="machine">
+    <div class="board" id="board" aria-label="Grelha de jogo"></div>
+    <div class="overlay" id="overlay" hidden>
+      <div><div class="big" id="overlayBig"></div><div class="small" id="overlaySmall"></div></div>
+    </div>
+  </div>
+
+  <div class="winline" id="winline" aria-live="polite">Carrega em GIRAR ou na barra de espaço.</div>
+
+  <div class="deck">
+    <div class="meter"><span class="label">Saldo (demo)</span><span class="value" id="balance">1 000,00</span></div>
+    <button class="spin" id="spin" type="button">Girar</button>
+    <div class="meter right"><span class="label">Ganho</span><span class="value win" id="win">0,00</span></div>
+  </div>
+
+  <div class="row">
+    <div class="bet">
+      <button class="chip" id="betDown" type="button" aria-label="Diminuir aposta">−</button>
+      <output id="bet" aria-label="Aposta">1,00</output>
+      <button class="chip" id="betUp" type="button" aria-label="Aumentar aposta">+</button>
+    </div>
+    <button class="chip buy" id="buy" type="button">Comprar bónus</button>
+    <button class="chip" id="turbo" type="button" aria-pressed="false">Turbo</button>
+  </div>
+
+  <section class="sheet">
+    <h2>Como funciona</h2>
+    <div class="rules">
+      <div class="rule"><h3>Burst Ways</h3><p>Ganhos em vias, da esquerda para a direita, a partir de 3 rolos seguidos. Os símbolos vencedores rebentam e cada rolo que perdeu símbolos ganha mais uma linha, até 7. Caem símbolos novos e o processo repete-se enquanto houver ganhos.</p></div>
+      <div class="rule"><h3>Shove Wilds</h3><p>Um wild nos rolos 2 a 5 alarga-se ao rolo inteiro e recebe um multiplicador de x2, x3, x5 ou x10. Se vários rolos wild entram no mesmo ganho, os multiplicadores somam-se. O wild rebenta juntamente com o ganho.</p></div>
+      <div class="rule"><h3>Golden Ticket</h3><p>3, 4, 5 ou 6 bilhetes no fim da sequência de cascatas dão 8, 10, 12 ou 15 rodadas grátis. Nas rodadas grátis os rolos <em>não</em> voltam às 3 linhas: a grelha só cresce. Novos bilhetes dão rodadas extra.</p></div>
+      <div class="rule"><h3>Números</h3><p id="numbers">RTP simulado de cerca de 96%. Volatilidade alta. Rodadas grátis em média 1 em 270 jogadas.</p></div>
+    </div>
+    <h2>Tabela de pagamentos</h2>
+    <div class="paytable-wrap"><table id="paytable"></table></div>
+    <p class="fine">Demo com créditos fictícios, sem dinheiro real. Os pagamentos são multiplicados pela aposta e pelo número de vias.</p>
+  </section>
+</div>
+
+<script src="engine.js"></script>
+<script>
+  const ICONS = {
+    gum: "🫧", mint: "🍬", lolly: "🍭", jelly: "🍮",
+    punk: "😈", clown: "🤡", rat: "🐀", boss: "💀",
+    wild: "💥", ticket: "🎟️",
+  };
+  const BETS = [0.2, 0.5, 1, 2, 5, 10];
+  const $ = id => document.getElementById(id);
+  const fmt = n => n.toLocaleString("pt-PT", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  let cfg, game;
+  let balance = 1000, betIndex = 2, busy = false, turbo = false;
+  let wildShown = {};
+
+  const sleep = ms => new Promise(r => setTimeout(r, ms * (turbo ? 0.35 : 1)));
+  const bet = () => BETS[betIndex];
+
+  async function loadConfig() {
+    for (const url of ["config.json", "../math/config.json"]) {
+      try {
+        const res = await fetch(url);
+        if (res.ok) return res.json();
+      } catch (e) { /* try the next location */ }
+    }
+    throw new Error("config.json not found");
+  }
+
+  function renderReel(r, column, added = column.length, fresh = false) {
+    const reel = $("board").children[r];
+    reel.style.setProperty("--rows", column.length);
+    reel.replaceChildren();
+    if (r in wildShown) {
+      const block = document.createElement("div");
+      block.className = "wildblock" + (fresh ? " fresh" : "");
+      block.innerHTML = `<span class="w">WILD</span><span class="m">x${wildShown[r]}</span>`;
+      reel.append(block);
+      return;
+    }
+    column.forEach((sym, i) => {
+      const cell = document.createElement("div");
+      const kind = cfg.symbols[sym].kind;
+      cell.className = "cell" + (kind === "high" ? " high" : "") + (sym === "ticket" ? " ticket" : "") + (i < added ? " drop" : "");
+      if (i < added) cell.style.animationDelay = `${(added - i) * 30 * (turbo ? 0.35 : 1)}ms`;
+      cell.textContent = ICONS[sym];
+      cell.setAttribute("aria-label", cfg.symbols[sym].name);
+      reel.append(cell);
+    });
+  }
+
+  function renderGrid(grid, added) {
+    grid.forEach((col, r) => renderReel(r, col, added ? added[r] : col.length));
+    $("ways").textContent = grid.reduce((a, c) => a * c.length, 1).toLocaleString("pt-PT");
+  }
+
+  function showOverlay(big, small) {
+    $("overlayBig").textContent = big;
+    $("overlaySmall").textContent = small || "";
+    $("overlay").hidden = false;
+  }
+
+  function setBusy(b) {
+    busy = b;
+    for (const id of ["spin", "buy", "betUp", "betDown"]) $(id).disabled = b;
+    if (!b) updateButtons();
+  }
+
+  function updateButtons() {
+    $("bet").textContent = fmt(bet());
+    $("buy").textContent = `Comprar bónus · ${fmt(bet() * cfg.bonus_buy_cost)}`;
+    $("spin").disabled = busy || balance < bet();
+    $("buy").disabled = busy || balance < bet() * cfg.bonus_buy_cost;
+    $("betDown").disabled = busy || betIndex === 0;
+    $("betUp").disabled = busy || betIndex === BETS.length - 1;
+    $("balance").textContent = fmt(balance);
+  }
+
+  async function play(mode) {
+    if (busy) return;
+    const stake = mode === "bonus" ? bet() * cfg.bonus_buy_cost : bet();
+    if (balance < stake) return;
+    setBusy(true);
+    balance -= stake;
+    $("balance").textContent = fmt(balance);
+    $("overlay").hidden = true;
+    $("status").textContent = "";
+    $("win").textContent = fmt(0);
+    $("winline").textContent = "";
+
+    const { total, events } = game.play(mode);
+    let running = 0, inFree = false;
+
+    for (const ev of events) {
+      if (ev.type === "spin") {
+        wildShown = {};
+        if (ev.free) $("status").textContent = `Rodada grátis ${ev.free}/${ev.of}`;
+        renderGrid(ev.grid);
+        await sleep(450);
+      } else if (ev.type === "shove") {
+        wildShown[ev.reel] = ev.mult;
+        renderReel(ev.reel, Array($("board").children[ev.reel].style.getPropertyValue("--rows") | 0).fill("wild"), 0, true);
+        await sleep(550);
+      } else if (ev.type === "win") {
+        const amount = ev.wins.reduce((a, w) => a + w.amount, 0);
+        running += amount;
+        $("win").textContent = fmt(Math.min(running, cfg.max_win) * bet());
+        $("winline").textContent = ev.wins.map(w =>
+          `${ICONS[w.symbol]} ${w.length} rolos · ${w.ways} vias${w.mult > 1 ? ` · x${w.mult}` : ""} = ${fmt(w.amount * bet())}`
+        ).join("   ");
+        const reels = $("board").children;
+        ev.burst.forEach((rows, r) => {
+          if (r in wildShown && rows.length) { reels[r].firstChild.classList.add("hit"); return; }
+          rows.forEach(i => reels[r].children[i]?.classList.add("hit"));
+        });
+        await sleep(750);
+        for (const el of $("board").querySelectorAll(".hit")) el.classList.add("pop");
+        ev.burst.forEach((rows, r) => { if (rows.length) delete wildShown[r]; });
+        await sleep(260);
+      } else if (ev.type === "refill") {
+        renderGrid(ev.grid, ev.added);
+        await sleep(380);
+      } else if (ev.type === "trigger") {
+        if (mode === "base") await sleep(500);
+        inFree = true;
+        document.body.classList.add("free");
+        showOverlay(`${ev.spins} rodadas grátis`, "A grelha deixa de encolher");
+        await sleep(1800);
+        $("overlay").hidden = true;
+      } else if (ev.type === "retrigger") {
+        showOverlay(`+${ev.extra} rodadas`, "Mais bilhetes dourados");
+        await sleep(1300);
+        $("overlay").hidden = true;
+      }
+    }
+
+    const won = total * bet();
+    $("win").textContent = fmt(won);
+    balance += won;
+    if (inFree) {
+      showOverlay(`${fmt(won)}`, `Total das rodadas grátis · ${fmt(total)}x a aposta`);
+      $("status").textContent = "";
+    } else if (total >= 20) {
+      showOverlay(total >= 100 ? "Ganho enorme" : "Grande ganho", `${fmt(won)} · ${fmt(total)}x a aposta`);
+    }
+    document.body.classList.remove("free");
+    setBusy(false);
+  }
+
+  function buildPaytable() {
+    const syms = Object.keys(cfg.paytable).reverse();
+    $("paytable").innerHTML =
+      `<thead><tr><th>Símbolo</th><th>3</th><th>4</th><th>5</th><th>6</th></tr></thead><tbody>` +
+      syms.map(s => `<tr><td><span class="sym">${ICONS[s]}</span>${cfg.symbols[s].name}</td>` +
+        [3, 4, 5, 6].map(n => `<td>${cfg.paytable[s][n].toFixed(2)}x</td>`).join("") + `</tr>`).join("") +
+      `</tbody>`;
+  }
+
+  async function start() {
+    cfg = await loadConfig();
+    game = new Game(cfg);
+    for (let r = 0; r < cfg.reels; r++) $("board").append(Object.assign(document.createElement("div"), { className: "reel" }));
+    renderGrid(game.drawGrid("base", Array(cfg.reels).fill(cfg.min_rows)));
+    buildPaytable();
+    updateButtons();
+
+    $("spin").addEventListener("click", () => play("base"));
+    $("buy").addEventListener("click", () => play("bonus"));
+    $("betDown").addEventListener("click", () => { betIndex--; updateButtons(); });
+    $("betUp").addEventListener("click", () => { betIndex++; updateButtons(); });
+    $("overlay").addEventListener("click", () => { if (!busy) $("overlay").hidden = true; });
+    $("turbo").addEventListener("click", () => {
+      turbo = !turbo;
+      $("turbo").setAttribute("aria-pressed", turbo);
+      document.documentElement.style.setProperty("--t", turbo ? 0.35 : 1);
+    });
+    document.addEventListener("keydown", e => {
+      if (e.code === "Space" && !e.repeat && e.target === document.body) { e.preventDefault(); play("base"); }
+    });
+  }
+
+  start().catch(err => {
+    $("winline").textContent = "Não foi possível carregar a configuração do jogo. Abre a página através de um servidor local (ver README).";
+    console.error(err);
+  });
+</script>

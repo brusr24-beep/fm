@@ -1,0 +1,150 @@
+{
+  "name": "Candy Riot",
+  "reels": 6,
+  "min_rows": 3,
+  "max_rows": 7,
+  "max_win": 10000,
+  "bonus_buy_cost": 84,
+  "symbols": {
+    "gum": {
+      "name": "Gum",
+      "kind": "low"
+    },
+    "mint": {
+      "name": "Mint",
+      "kind": "low"
+    },
+    "lolly": {
+      "name": "Lolly",
+      "kind": "low"
+    },
+    "jelly": {
+      "name": "Jelly",
+      "kind": "low"
+    },
+    "punk": {
+      "name": "Punk",
+      "kind": "high"
+    },
+    "clown": {
+      "name": "Clown",
+      "kind": "high"
+    },
+    "rat": {
+      "name": "Rat",
+      "kind": "high"
+    },
+    "boss": {
+      "name": "Boss",
+      "kind": "high"
+    },
+    "wild": {
+      "name": "Sugar Rush Wild",
+      "kind": "wild"
+    },
+    "ticket": {
+      "name": "Golden Ticket",
+      "kind": "scatter"
+    }
+  },
+  "paytable": {
+    "gum": {
+      "3": 0.01,
+      "4": 0.02,
+      "5": 0.04,
+      "6": 0.08
+    },
+    "mint": {
+      "3": 0.01,
+      "4": 0.02,
+      "5": 0.04,
+      "6": 0.08
+    },
+    "lolly": {
+      "3": 0.02,
+      "4": 0.03,
+      "5": 0.06,
+      "6": 0.12
+    },
+    "jelly": {
+      "3": 0.02,
+      "4": 0.03,
+      "5": 0.06,
+      "6": 0.12
+    },
+    "punk": {
+      "3": 0.03,
+      "4": 0.06,
+      "5": 0.12,
+      "6": 0.25
+    },
+    "clown": {
+      "3": 0.04,
+      "4": 0.08,
+      "5": 0.16,
+      "6": 0.3
+    },
+    "rat": {
+      "3": 0.06,
+      "4": 0.12,
+      "5": 0.25,
+      "6": 0.5
+    },
+    "boss": {
+      "3": 0.1,
+      "4": 0.2,
+      "5": 0.4,
+      "6": 1.0
+    }
+  },
+  "weights": {
+    "base": {
+      "gum": 12,
+      "mint": 12,
+      "lolly": 11,
+      "jelly": 11,
+      "punk": 7,
+      "clown": 6,
+      "rat": 5,
+      "boss": 4,
+      "wild": 0.25,
+      "ticket": 0.55
+    },
+    "free": {
+      "gum": 12,
+      "mint": 12,
+      "lolly": 11,
+      "jelly": 11,
+      "punk": 7,
+      "clown": 6,
+      "rat": 5,
+      "boss": 4,
+      "wild": 0.34,
+      "ticket": 0.3
+    }
+  },
+  "wild_reels": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "wild_multipliers": {
+    "2": 60,
+    "3": 25,
+    "5": 12,
+    "10": 3
+  },
+  "free_spins_award": {
+    "3": 8,
+    "4": 10,
+    "5": 12,
+    "6": 15
+  },
+  "free_spins_retrigger": {
+    "3": 3,
+    "4": 5,
+    "5": 8,
+    "6": 10
+  }
+}
